@@ -6,13 +6,13 @@ import React, { useEffect, useState } from "react";
 import "./sidebar.css";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import SidebarChat from "../sidebarChat/SidebarChat";
-import { db } from "../../firebase";
+import db from "../../firebase";
 
 const Sidebar = () => {
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
-    db.collection("rooms").onSnapshot((snapshot) =>
+    const unsubscribe = db.collection("rooms").onSnapshot((snapshot) =>
       setRooms(
         snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -20,6 +20,10 @@ const Sidebar = () => {
         }))
       )
     );
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return (
@@ -46,10 +50,10 @@ const Sidebar = () => {
       </div>
       <div className="sidebar__chats">
         <SidebarChat addNewChat />
-        <SidebarChat />
-        <SidebarChat />
-        <SidebarChat />
-        <SidebarChat />
+        {rooms &&
+          rooms.map((room) => (
+            <SidebarChat key={room.id} id={room.id} name={room.data.name} />
+          ))}
       </div>
     </div>
   );
